@@ -82,8 +82,8 @@ To get started with RustyDLNA, follow these steps:
    First, clone the repository to your local machine:
 
    ```bash
-   git clone https://github.com/pj1234678/rusty-dlna.git
-   cd rusty-dlna
+   git clone https://github.com/pj1234678/RustyDLNA.git
+   cd RustyDLNA
    ```
 
 2. **Configure the IP address and path**:
