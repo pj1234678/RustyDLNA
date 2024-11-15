@@ -109,6 +109,6 @@ We welcome contributions to RustyDLNA! If you're interested in helping out, plea
 
 ## License
 
-RustyDLNA is licensed under the **GPL-3.0** license.
+RustyDLNA is licensed under the **MIT** license.
 
 ---
