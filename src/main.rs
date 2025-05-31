@@ -182,11 +182,11 @@ fn handle_get_request(mut stream: TcpStream, http_request: &str) {
         }
     };
     let decoded_path = decode(http_path);
-    let trimmed_path = decoded_path.trim_start_matches(['.', '/']);
+    let sanitized_path = sanitize_path(decoded_path);
 	
-    let combined_path = format!("{}/{}", DIR_PATH, decoded_path);
+    let combined_path = format!("{}/{}", DIR_PATH, sanitized_path);
 
-    let mut file = match trimmed_path {
+    let mut file = match sanitized_path.as_str() {
         "icons/lrg.png" => {
             match File::open("lrg.png") {
                 Ok(file) => file,
@@ -648,6 +648,35 @@ for (name, _) in directories {
 
     let soap_response_size = soap_response.len();
     format!("HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\nContent-Type: text/xml;\r\nContent-Length: {}\r\nServer: RustyDLNA DLNADOC/1.50 UPnP/1.0 RustyDLNA6/1.3.0\r\n\r\n{}", soap_response_size, soap_response)
+}
+
+fn sanitize_path(path: String) -> String {
+    let mut parts: Vec<&str> = path.split('/').collect();
+
+    let mut i = 0;
+    while i < parts.len() {
+        match parts[i] {
+            // ignore leading slashes, trailing slashes, duplicate slashes
+            // and single dot dirs
+            "" | "." => {
+                parts.remove(i);
+            },
+            ".." => {
+                parts.remove(i);
+
+                // go up one dir (if possible)
+                if i > 0 {
+                    parts.remove(i - 1);
+                    i -= 1;
+                }
+            },
+            _ => {
+                i += 1;
+            }
+        }
+    }
+
+    return parts.join("/");
 }
 
 fn decode(s: &str) -> String {
