@@ -158,7 +158,7 @@ fn handle_head_request(mut stream: TcpStream) {
     let date_header = "Date: Fri, 08 Nov 2024 05:39:08 GMT\r\n";
     let ext_header = "EXT:\r\n\r\n";
 
-    stream.write_all(format!("{}{}{}{}{}", response, content_type, content_length, date_header, ext_header).as_bytes());
+    let _ = stream.write_all(format!("{}{}{}{}{}", response, content_type, content_length, date_header, ext_header).as_bytes());
 
 }
 
@@ -167,7 +167,7 @@ fn handle_head_request(mut stream: TcpStream) {
 
 fn handle_get_request(mut stream: TcpStream, http_request: &str) {
     let mut http_request_parts = http_request.split_whitespace();
-    let http_method = match http_request_parts.next() {
+    match http_request_parts.next() {
         Some(method) => method,
         None => {
             eprintln!("Malformed HTTP request: missing method");
@@ -461,7 +461,7 @@ fn handle_post_request(
 
     let mut cache = match cache.lock() {
         Ok(locked_cache) => locked_cache,
-        Err(poisoned) => {
+        Err(_) => {
             eprintln!("Mutex poisoned. Could not acquire lock.");
             return; // Or handle as needed
         }
@@ -471,7 +471,7 @@ fn handle_post_request(
     let cached_response = cache.get(object_id);
     match cached_response {
         Some(cached_response) => {
-            stream.write_all(cached_response).map_err(|err| eprintln!("Error sending response: {}", err));
+            let _ = stream.write_all(cached_response).map_err(|err| eprintln!("Error sending response: {}", err));
             return;
         }
         None => {
@@ -482,7 +482,7 @@ fn handle_post_request(
     },
     false => {
         // Continue with the rest of the logic if object_id is not empty
-        let object_id_stripped = object_id
+        let _ = object_id
             .strip_prefix("64$")
             .unwrap_or(object_id)
             .strip_prefix("0")
@@ -513,7 +513,7 @@ fn handle_post_request(
                 println!("Added ObjectID {} (folder) to cache.", object_id);
 
                 // Write the response to the stream.
-                stream.write_all(response_bytes).map_err(|err| eprintln!("Error sending response: {}", err));
+                let _ = stream.write_all(response_bytes).map_err(|err| eprintln!("Error sending response: {}", err));
                 return;
             } else if path.is_file() {
                 println!("It's a file {}", path.display());
@@ -522,7 +522,7 @@ fn handle_post_request(
                 let response_bytes = meta_response.as_bytes(); // Convert the metadata response to bytes.
 
                 // Write the response to the stream.
-                stream.write_all(response_bytes).map_err(|err| eprintln!("Error sending response: {}", err));
+                let _ = stream.write_all(response_bytes).map_err(|err| eprintln!("Error sending response: {}", err));
                 return;
             } else {
                 // Handle the case where the object is neither a folder nor a file (e.g., symbolic link, invalid path, etc.).
@@ -585,7 +585,7 @@ match fs::read_dir(combined_path.clone()) {
             }
         }
     }
-    Err(err) => println!("Error reading directory: {}", combined_path),
+    Err(_) => println!("Error reading directory: {}", combined_path),
 }
 
     let mut loop_count = 0;
